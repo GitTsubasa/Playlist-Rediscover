@@ -1,4 +1,4 @@
-const logoElement = document.querySelector("#guide-spacer");
+let logoElement = document.querySelector("#logo-icon");
 console.log(logoElement);
 console.dir(document);
 const newElement = document.createElement("div");
