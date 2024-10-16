@@ -9,9 +9,7 @@
   "content_scripts": [
     {
       "matches": ["https://www.youtube.com/playlist?list=*"],
-      "js": ["contentScript.js"],
-      "type": "module"
+      "js": ["contentScript.js"]
     }
-  ],
-  "permissions": ["activeTab"]
+  ]
 }
