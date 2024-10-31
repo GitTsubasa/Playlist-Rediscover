@@ -1,5 +1,7 @@
 console.log("Content script loaded");
-// const testElement = document.querySelector("#logo-icon");
+
+// static element tester
+// const testElement = document.querySelector("#yt-logo");
 // const newElement2 = document.createElement("div");
 // newElement2.innerHTML = "hihihi";
 // testElement.parentNode.replaceChild(newElement2, testElement);
@@ -12,33 +14,46 @@ const targetNode = document.body;
 const config = { childList: true, subtree: true };
 
 function showUnavailableVideos() {
-  const SUVButtonContainer = document.querySelector(
-    "yt-list-item-view-model-wiz__label yt-list-item-view-model-wiz__container yt-list-item-view-model-wiz__container--compact yt-list-item-view-model-wiz__container--tappable yt-list-item-view-model-wiz__container--in-popup"
+  const kebabButton = document.querySelector(
+    // "ytd-alert-with-button-renderer"
+    ".yt-flexible-actions-view-model-wiz__action--icon-only-button .yt-spec-button-shape-next"
   );
-  if (SUVButtonContainer) {
-    const SUVSpanContainer = document.querySelector(
-      "yt-core-attributed-string yt-list-item-view-model-wiz__title yt-core-attributed-string--white-space-pre-wrap"
+  if (kebabButton) {
+    console.log("Found KebabButton");
+    kebabButton.click();
+    const SUVContainer = document.querySelector(
+      ".yt-core-attributed-string.yt-list-item-view-model-wiz__title.yt-core-attributed-string--white-space-pre-wrap"
     );
-    console.log("Found SUVButtonContainer");
-    if (SUVSpanContainer) {
-      console.log("FoundSUVSpanContainer");
-      SUVButtonContainer.click();
+    if (SUVContainer) {
+      console.log("Found SUVContainer");
+      // SUVContainer.click();
     }
   } else {
-    console.log("SUVButtonContainer could not be found.");
+    console.log("KebabButton could not be found.");
   }
 }
 
 const callback = function (mutationsList, observer) {
   for (let mutation of mutationsList) {
     if (mutation.type === "childList") {
-      showUnavailableVideos();
-      observer.disconnect();
-      break;
+      setTimeout(() => {
+        showUnavailableVideos();
+        observer.disconnect();
+      }, 1000);
+      // keep mutationobserver around b/c I want to keep track of the stages of the DOM
+      // examine each of the mutation after I click the SUVButton
+      // let hiddenElement = document.querySelector(
+      // ".yt-flexible-actions-view-model-wiz__action--icon-only-button .yt-spec-button-shape-next"
+      // "#yt-logo"
+      //   "ytd-alert-with-button-renderer"
+      // );
+      // if (hiddenElement) {
+      //   console.log("Found hidden element");
+      // }
+      // break;
     }
   }
 };
-
 const observer = new MutationObserver(callback);
 observer.observe(targetNode, config);
 
