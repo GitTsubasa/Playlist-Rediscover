@@ -13,33 +13,43 @@ console.log("Content script loaded");
 const targetNode = document.body;
 const config = { childList: true, subtree: true };
 
+let state = "waiting-for-button";
+console.log(document.querySelectorAll('span[role="text"]'));
+
 function showUnavailableVideos() {
   const kebabButton = document.querySelector(
-    // "ytd-alert-with-button-renderer"
-    ".yt-flexible-actions-view-model-wiz__action--icon-only-button .yt-spec-button-shape-next"
+    // this selector does not work because it's very specific and subject to change in a dynamic element
+    // ".yt-flexible-actions-view-model-wiz__action--icon-only-button .yt-spec-button-shape-next"
+    `button[aria-label="More actions"]`
   );
-  if (kebabButton) {
-    console.log("Found KebabButton");
-    kebabButton.click();
-    const SUVContainer = document.querySelector(
-      ".yt-core-attributed-string.yt-list-item-view-model-wiz__title.yt-core-attributed-string--white-space-pre-wrap"
-    );
+  // Get all elements with the specified selector and find the one with the matching text
+  // by converting into array and finding the specific text
+  const SUVContainer = Array.from(
+    // ".yt-core-attributed-string.yt-list-item-view-model-wiz__title.yt-core-attributed-string--white-space-pre-wrap"
+    document.querySelectorAll('span[role="text"]')
+  ).find((el) => el.textContent.includes("Show unavailable videos"));
+  if (state === "waiting-for-button") {
+    if (kebabButton) {
+      console.log("Found KebabButton");
+      kebabButton.click();
+      state = "waiting-for-dropdown";
+      console.log(state);
+    }
+  } else if (state === "waiting-for-dropdown") {
+    console.log("hi");
     if (SUVContainer) {
       console.log("Found SUVContainer");
-      // SUVContainer.click();
+      SUVContainer.click();
+      state = "waiting-for-videoselector";
     }
-  } else {
-    console.log("KebabButton could not be found.");
   }
 }
 
 const callback = function (mutationsList, observer) {
   for (let mutation of mutationsList) {
     if (mutation.type === "childList") {
-      setTimeout(() => {
-        showUnavailableVideos();
-        observer.disconnect();
-      }, 1000);
+      showUnavailableVideos();
+      // observer.disconnect();
       // keep mutationobserver around b/c I want to keep track of the stages of the DOM
       // examine each of the mutation after I click the SUVButton
       // let hiddenElement = document.querySelector(
