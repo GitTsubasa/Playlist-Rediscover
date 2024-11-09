@@ -28,6 +28,22 @@ function showUnavailableVideos() {
     // ".yt-core-attributed-string.yt-list-item-view-model-wiz__title.yt-core-attributed-string--white-space-pre-wrap"
     document.querySelectorAll('span[role="text"]')
   ).find((el) => el.textContent.includes("Show unavailable videos"));
+  // const playlistVideos = Array.from(
+  //   document.querySelectorAll("ytd-playlist-video-renderer")
+  // ).find((el) => el.textContent.includes("[Deleted Video]"));
+  const playlistVideos = document.querySelectorAll(
+    "ytd-playlist-video-renderer"
+  );
+
+  // Loop through each video and check if it contains "[Deleted video]"
+  playlistVideos.forEach((video) => {
+    const titleElement = video.querySelector("#video-title");
+
+    // Check if the title text includes "[Deleted video]"
+    if (titleElement && titleElement.textContent.includes("[Deleted video]")) {
+      console.log("Deleted video found:", titleElement.href);
+    }
+  });
   if (state === "waiting-for-button") {
     if (kebabButton) {
       console.log("Found KebabButton");
@@ -41,6 +57,11 @@ function showUnavailableVideos() {
       console.log("Found SUVContainer");
       SUVContainer.click();
       state = "waiting-for-videoselector";
+    }
+  } else if (state === "waiting-for-videoselector") {
+    if (playlistVideos) {
+      console.log("Found playlistVideos");
+      state = "waiting for something";
     }
   }
 }
