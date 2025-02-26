@@ -15,12 +15,6 @@
   "background": {
     "service_worker": "background.js"
   },
-  "permissions": [
-    "webRequest",
-    "webRequestBlocking",
-    "https://web.archive.org/",
-    "https://www.youtube.com/"
-  ],
   "host_permissions": [
     "https://web.archive.org/web/*",
     "https://archive.org/wayback/*",

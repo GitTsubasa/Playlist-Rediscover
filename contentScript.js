@@ -12,6 +12,7 @@ const targetNode = document.body;
 const config = { childList: true, subtree: true };
 
 let state = "waiting-for-button";
+let processedVideos = new Set(); // Tracking the processed videos
 
 function showUnavailableVideos() {
   const kebabButton = document.querySelector(
@@ -44,32 +45,61 @@ function showUnavailableVideos() {
       .map((el) => {
         const url = new URL(el.href);
         url.searchParams.delete("list");
+        url.searchParams.delete("index");
+        url.searchParams.delete("pp");
         return url.toString();
       });
-    let videoArray2 = videoArray.forEach((el) => {
-      fetchURL(el);
+    // videoArray.forEach((el) => {
+    //   fetchURL(el);
+    // });
+    videoArray.forEach((el) => {
+      if (!processedVideos.has(el)) {
+        processedVideos.add(el);
+        fetchURL(el);
+      }
+      if (videoArray.length > 0 && videoArray.length === processedVideos.size) {
+        observer.disconnect();
+        console.log("All videos processed, disconnect observer");
+      }
     });
   }
 }
 // https://www.youtube.com/watch?v=LSjB39es2x4&index=7&pp=gAQBiAQB8AUB
 // https://www.youtube.com/watch?v=HiQPlqtnm24&index=23&pp=gAQBiAQB8AUB
 // https://www.youtube.com/watch?v=3stAaLqFfYY&index=45&pp=gAQBiAQB8AUB
-const fetchURL = async function (hrefs) {
+
+// const fetchURL = async function (hrefs) {
+//   const waybackMachineEndpoint = `https://archive.org/wayback/available?url=${hrefs}`;
+//   try {
+//     const response = await fetch(waybackMachineEndpoint);
+//     const data = await response.json();
+//     if (data && data.archived_snapshots && data.archived_snapshots.closest) {
+//       let URL = data.archived_snapshots.closest.url;
+//       URL = URL.replace("http://", "https://");
+//       console.log("fetchurl:", URL);
+//       const archivedPageResponse = await fetch(URL);
+//       const html = await archivedPageResponse.text();
+//       console.log("fetchhtml:", html);
+//     }
+//   } catch (error) {
+//     console.error(error.message);
+//   }
+// };
+
+const fetchURL = function (hrefs) {
   const waybackMachineEndpoint = `https://archive.org/wayback/available?url=${hrefs}`;
-  try {
-    const response = await fetch(waybackMachineEndpoint);
-    const data = await response.json();
-    if (data && data.archived_snapshots && data.archived_snapshots.closest) {
-      let URL = data.archived_snapshots.closest.url;
-      URL = URL.replace("http://", "https://");
-      console.log("fetchurl:", URL);
-      const archivedPageResponse = await fetch(URL);
-      const html = await archivedPageResponse.text();
-      console.log("fetchhtml:", html);
+  chrome.runtime.sendMessage(
+    { type: "fetchWaybackData", endpoint: waybackMachineEndpoint },
+    (response) => {
+      // const { closestUrl, archivedPageHtml } = response.data;
+      if (response && response.success) {
+        console.log("fetchurl:", response);
+      } else {
+        console.log("fetchurlerror:", response);
+        console.error("Error:", response.error || "Unknown error occurred.");
+      }
     }
-  } catch (error) {
-    console.error(error.message);
-  }
+  );
 };
 
 const callback = function (mutationsList, observer) {
